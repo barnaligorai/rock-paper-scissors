@@ -1,4 +1,4 @@
-class Icon {
+class Choice {
   #id;
   #path;
   constructor(id, path) {
@@ -10,6 +10,8 @@ class Icon {
     return { id: this.#id, path: this.#path };
   }
 };
+
+const randomInt = (num) => Math.floor(Math.random() * num);
 
 const checkWinningChoice = (choice1, choice2) => {
   if (choice1 === choice2) {
@@ -39,12 +41,12 @@ const decideWinner = (choice1, choice2) => {
   return 'Computer';
 };
 
-const drawComputerChoice = (choice, icons) => {
+const drawComputerChoice = (choice) => {
   const computerChoiceElement = document.getElementById('computer-choice');
   const computerCardElement = document.getElementById('computer');
   computerChoiceElement.innerText = '';
 
-  const { path, id } = icons[choice].getInfo();
+  const { path, id } = choice.getInfo();
   const imgTag = document.createElement('img');
   imgTag.src = path;
   computerChoiceElement.appendChild(imgTag);
@@ -54,9 +56,9 @@ const drawComputerChoice = (choice, icons) => {
   computerCardElement.appendChild(divTag);
 };
 
-const displayPlayerChoice = (pChoice) => {
+const displayPlayerChoice = (choice) => {
   const playerChoiceElement = document.getElementById('player-choice');
-  playerChoiceElement.innerText = `Your choice : ${pChoice}`;
+  playerChoiceElement.innerText = `Your choice : ${choice}`;
 };
 
 const declareWinner = (winner) => {
@@ -76,21 +78,68 @@ const declareWinner = (winner) => {
   displayElement.appendChild(divTag);
 };
 
-const startGame = () => {
-  const rock = new Icon('rock', 'images/rock.png');
-  const paper = new Icon('paper', 'images/paper.png');
-  const scissors = new Icon('scissors', 'images/scissors.png');
+class Game {
+  #choices;
+  #rock;
+  #paper;
+  #scissors;
+  constructor(rock, paper, scissors) {
+    this.#rock = rock;
+    this.#paper = paper;
+    this.#scissors = scissors;
+    this.#choices = [rock, paper, scissors];
+  }
 
-  const icons = { rock, paper, scissors };
+  randomChoice() {
+    return this.#choices[randomInt(this.#choices.length)];
+  }
 
-  const pChoice = 'rock'; // get from event
-  const cChoice = 'scissors'; // generate computer's choice
-  drawComputerChoice(cChoice, icons);
-  displayPlayerChoice(pChoice);
-
-  const winner = decideWinner(pChoice, cChoice);
-  declareWinner(winner);
-
+  getIds() {
+    return this.#choices.map(choice => choice.getInfo().id);
+  }
 };
 
-window.onload = startGame;
+const removeEventListeners = (game) => {
+  const ids = game.getIds();
+  ids.forEach(id => {
+    const htmlElement = document.getElementById(id);
+    htmlElement.onclick = null;
+  });
+};
+
+const addEventListeners = (game, startGame) => {
+  const ids = game.getIds();
+  ids.forEach(id => {
+    const htmlElement = document.getElementById(id);
+    htmlElement.onclick = (event) => {
+      const playerChoice = event.target.id;
+      startGame(playerChoice);
+    };
+  });
+};
+
+const main = (game) =>
+  (pChoice) => {
+    const cChoice = game.randomChoice();
+
+    drawComputerChoice(cChoice);
+    displayPlayerChoice(pChoice);
+
+    const winner = decideWinner(pChoice, cChoice.getInfo().id);
+    declareWinner(winner);
+    removeEventListeners(game);
+  };
+
+const setUpGame = () => {
+  const rock = new Choice('rock', 'images/rock.png');
+  const paper = new Choice('paper', 'images/paper.png');
+  const scissors = new Choice('scissors', 'images/scissors.png');
+
+  const game = new Game(rock, paper, scissors);
+  return game;
+};
+
+window.onload = () => {
+  const game = setUpGame();
+  addEventListeners(game, main(game));
+};
