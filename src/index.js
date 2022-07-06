@@ -13,65 +13,8 @@ class Choice {
 
 const randomInt = (num) => Math.floor(Math.random() * num);
 
-const checkWinningChoice = (choice1, choice2) => {
-  const choiceCombinations = {
-    rock: { rock: 0, scissors: 1, paper: 2 },
-    paper: { paper: 0, rock: 1, scissors: 2 },
-    scissors: { scissors: 0, paper: 1, rock: 2 }
-  };
-
-  return choiceCombinations[choice1][choice2];
-};
-
-const decideWinner = (choice1, choice2) => {
-  const winningChoice = checkWinningChoice(choice1, choice2);
-
-  if (winningChoice === 0) {
-    return 'draw';
-  }
-
-  if (winningChoice === 1) {
-    return 'Player';
-  }
-
-  return 'Computer';
-};
-
-const drawComputerChoice = (choice) => {
-  const computerChoiceElement = document.getElementById('computer-choice');
-  const computerCardElement = document.getElementById('computer');
-  computerChoiceElement.innerText = '';
-
-  const { path, id } = choice.getInfo();
-  const imgTag = document.createElement('img');
-  imgTag.src = path;
-  computerChoiceElement.appendChild(imgTag);
-
-  const divTag = document.createElement('div');
-  divTag.innerText = `Computer's choice : ${id}`;
-  computerCardElement.appendChild(divTag);
-};
-
-const displayPlayerChoice = (choice) => {
-  const playerChoiceElement = document.getElementById('player-choice');
-  playerChoiceElement.innerText = `Your choice : ${choice}`;
-};
-
-const declareWinner = (winner) => {
-  let innerText = `${winner} won this round.`;
-  if (winner === 'draw') {
-    innerText = 'Match drawn !!!';
-  }
-
-  const divTag = document.createElement('div');
-  const h2Tag = document.createElement('h2');
-  h2Tag.style.color = '#480CA8';
-  divTag.id = 'winner';
-  h2Tag.innerText = innerText;
-
-  const displayElement = document.getElementById('game-area');
-  divTag.append(h2Tag);
-  displayElement.appendChild(divTag);
+const randomChoice = (choices) => {
+  return choices[randomInt(choices.length)];
 };
 
 class Game {
@@ -84,10 +27,6 @@ class Game {
     this.#paper = paper;
     this.#scissors = scissors;
     this.#choices = [rock, paper, scissors];
-  }
-
-  randomChoice() {
-    return this.#choices[randomInt(this.#choices.length)];
   }
 
   getAllChoices() {
@@ -109,22 +48,23 @@ const addEventListeners = (game, startGame) => {
     const htmlElement = document.getElementById(choice);
     htmlElement.onclick = (event) => {
       const playerChoice = event.target.id;
-      startGame(playerChoice);
+      startGame(game, playerChoice);
     };
   });
 };
 
-const main = (game) =>
-  (pChoice) => {
-    const cChoice = game.randomChoice();
+const startGame = (game, pChoice) => {
+  const randChoice = randomChoice(['rock', 'paper', 'scissors']);
+  const path = `images/${randChoice}.png`;
+  const cChoice = new Choice(randChoice, path);
 
-    drawComputerChoice(cChoice);
-    displayPlayerChoice(pChoice);
+  drawComputerChoice(cChoice);
+  displayPlayerChoice(pChoice);
 
-    const winner = decideWinner(pChoice, cChoice.getInfo().id);
-    declareWinner(winner);
-    removeEventListeners(game);
-  };
+  const winner = decideWinner(pChoice, cChoice.getInfo().id);
+  declareWinner(winner);
+  removeEventListeners(game);
+};
 
 const setUpGame = () => {
   const rock = new Choice('rock', 'images/rock.png');
@@ -137,5 +77,5 @@ const setUpGame = () => {
 
 window.onload = () => {
   const game = setUpGame();
-  addEventListeners(game, main(game));
+  addEventListeners(game, startGame);
 };
