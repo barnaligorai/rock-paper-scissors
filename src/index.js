@@ -14,17 +14,13 @@ class Choice {
 const randomInt = (num) => Math.floor(Math.random() * num);
 
 const checkWinningChoice = (choice1, choice2) => {
-  if (choice1 === choice2) {
-    return 0;
-  }
+  const choiceCombinations = {
+    rock: { rock: 0, scissors: 1, paper: 2 },
+    paper: { paper: 0, rock: 1, scissors: 2 },
+    scissors: { scissors: 0, paper: 1, rock: 2 }
+  };
 
-  if (choice1 === 'rock' && choice2 === 'scissors' ||
-    choice1 === 'paper' && choice2 === 'rock' ||
-    choice1 === 'scissors' && choice2 === 'paper') {
-    return 1;
-  }
-
-  return 2;
+  return choiceCombinations[choice1][choice2];
 };
 
 const decideWinner = (choice1, choice2) => {
@@ -94,23 +90,23 @@ class Game {
     return this.#choices[randomInt(this.#choices.length)];
   }
 
-  getIds() {
+  getAllChoices() {
     return this.#choices.map(choice => choice.getInfo().id);
   }
 };
 
 const removeEventListeners = (game) => {
-  const ids = game.getIds();
-  ids.forEach(id => {
-    const htmlElement = document.getElementById(id);
+  const choices = game.getAllChoices();
+  choices.forEach(choice => {
+    const htmlElement = document.getElementById(choice);
     htmlElement.onclick = null;
   });
 };
 
 const addEventListeners = (game, startGame) => {
-  const ids = game.getIds();
-  ids.forEach(id => {
-    const htmlElement = document.getElementById(id);
+  const choices = game.getAllChoices();
+  choices.forEach(choice => {
+    const htmlElement = document.getElementById(choice);
     htmlElement.onclick = (event) => {
       const playerChoice = event.target.id;
       startGame(playerChoice);
